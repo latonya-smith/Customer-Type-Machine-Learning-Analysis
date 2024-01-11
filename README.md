@@ -1,3 +1,4 @@
-# Customer-Type-Machine-Learning-Analysis
+# QAC385-Project
+This is the group project repository for QAC385
 
-## This is my team's Machine Learning semester long project of identifying the types of customers that would accept promotions in at the grocery store. It involves the use of Machine Learning models such as Random Forest, Stepwise Regression and CLuster Analysis to identify these customer types.
+The data source is https://www.kaggle.com/datasets/imakash3011/customer-personality-analysis/data. 

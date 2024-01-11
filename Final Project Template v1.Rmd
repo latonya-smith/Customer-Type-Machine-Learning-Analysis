@@ -1,0 +1,201 @@
+---
+title: "Project Title Here"
+date: "Dec 6, 2022"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = TRUE)
+```
+
+### Team Members  
+* Member 1  
+* Member 2  
+* Member 3  
+* Member 4  
+
+## Problem Statement
+
+What is the problem you are trying to solve? Why is it important or useful to solve this problem?
+
+
+## Data Description
+
+Describe the dataset in detail. What is the source? Include URLs. How was it collected? What are the variables? What are the characteristics of the variables?
+
+
+## Data Preprocessing
+
+Describe any variable transformations, treatment of missing values, recoding and any other data manipulations completed prior to applying machine learning techniques. Include the code that reads and munges the data.
+
+```{r datainput}
+data(mtcars)
+
+# create factor variables
+mtcars$cyl <- factor(mtcars$cyl)
+```
+
+
+## Machine Learning Approach
+
+Below are machines learning models used for answering the research question in the context of classification. 
+
+- **KNN**
+K-Nearest Neighbors (KNN) is a straightforward algorithm that can be used for classification and regression. The underlying principle is based on the idea that similar things are close to each other. In the context of classification, when predicting the class of a new data point, KNN examines the classes of its k nearest neighbors in the feature space by calculating Euclidean distances. The class that occurs most frequently among these neighbors is assigned to the new data point. KNN's performance can be sensitive to the choice of the distance metric and the value of k.
+
+- **Logistic Regression**
+Logistic Regression is a fundamental and widely used linear model for binary classification tasks. It's particularly well-suited when the relationship between the features and the binary outcome can be approximated by a linear function. Logistic Regression models the probability of an instance belonging to a certain class using the logistic function, which ensures that the predicted probabilities fall between 0 and 1. The model estimates coefficients for each feature, indicating the strength and direction of their influence on the target variable. Despite its simplicity, Logistic Regression often performs well and is interpretable, making it a popular choice for various applications.
+
+- **Logistic Regression with Backward Stepwise Selection**
+Logistic Regression with Backward Stepwise Selection enhances the traditional logistic regression by automating the feature selection process. Starting with a model that includes all available features, this method iteratively removes the least significant features until a stopping criterion is met (i.e. taking out a variable that hurts the overall equation). The goal is to simplify the model by eliminating irrelevant or redundant variables, thereby improving interpretability and potentially preventing overfitting. Backward Stepwise Selection is particularly useful when dealing with datasets with a large number of features, helping to create a more parsimonious model without sacrificing predictive performance.
+
+- **Logistic Regression with Regularization**
+Logistic Regression with Regularization is a variant that addresses the risk of overfitting by penalizing large coefficients. Regularization techniques, such as L1 (Lasso) and L2 (Ridge), add a penalty term to the logistic regression cost function, discouraging the model from assigning excessive importance to any single feature. This is especially valuable when dealing with high-dimensional data where many features may not contribute significantly to the model's predictive power. Regularized Logistic Regression strikes a balance between fitting the training data well and generalizing to new, unseen data, making it a robust choice for various classification problems.
+
+- **Classification Tree**
+A Classification Tree is a hierarchical structure that makes decisions based on the values of features. At each internal node, the tree evaluates a specific feature, splitting the data into subsets based on the feature's value. This process is repeated recursively until a stopping criterion, such as a maximum depth or minimum number of samples per leaf, is reached. Classification Trees are interpretable and easy to visualize, providing a clear decision-making path. However, they can be prone to overfitting, capturing noise in the training data. 
+
+- **Random Forest**
+One of the pruning techniques that enhances the predictive performance of individual tree is Random Forest. It is an ensemble learning method that builds multiple decision trees and combines their predictions to achieve higher accuracy and robustness. Each tree is constructed using a random subset of the training data and a random subset of features at each split. The final prediction is often an average or majority vote of the individual tree predictions, providing a more stable and accurate result. Random Forest is known for handling complex relationships within the data and is less prone to overfitting compared to individual decision trees. It is versatile, capable of handling both classification and regression tasks, making it a popular choice for various machine learning applications.
+
+- **Gradient Boost Machine**
+The Gradient Boost Machine is another powerful ensemble learning technique that builds a series of weak learners, typically decision trees, sequentially. Each tree corrects the errors made by the previous ones, focusing on the instances that were misclassified. By combining the predictions of multiple weak learners, the model creates a strong predictive ensemble. Gradient Boosting is adept at capturing complex patterns and interactions within the data, making it particularly effective in high-dimensional spaces. However, it requires careful tuning of hyperparameters and may be computationally more demanding than some other algorithms. Its robustness and predictive performance have made Gradient Boosting a popular choice in various machine learning competitions and real-world applications.
+
+## Results
+
+```{r analysis}
+# create train and test dataset
+library(caret)
+set.seed(1234)
+index = createDataPartition(customer$Accepted_Cmp, p=.8, list=FALSE)
+train = customer[index,]
+test = customer[-index,]
+
+# use 10-fold cross-validation and try 10 values for each hyperparameter
+tc = trainControl(method = "cv", number = 10,
+                  summaryFunction = twoClassSummary,
+                  classProbs = TRUE)
+
+# KNN
+set.seed(1234)
+model.knn <- train(Accepted_Cmp ~ . , 
+                   data = train, 
+                   method = "knn",
+                   metric = "ROC",
+                   trControl = tc, 
+                   tuneLength = 10)
+
+# Logistic Regression
+set.seed(1234)
+model.lr <- train(Accepted_Cmp ~ .,
+                  data = train,
+                  method = "glm",
+                  family = "binomial",
+                  metric = "ROC",
+                  trControl = tc)
+
+# Logistic Regression with Backward Stepwise Selection
+set.seed(1234)
+model.lrsw <- train(Accepted_Cmp ~ .,
+                    data = train,
+                    method = "glmStepAIC",
+                    family = "binomial",
+                    metric = "ROC",
+                    trControl = tc)
+
+# Logistic Regression with Regularization
+set.seed(1234)
+model.lrreg <- train(Accepted_Cmp ~ .,
+                     data = train,
+                     method = "glmnet",
+                     family = "binomial",
+                     metric = "ROC",
+                     tuneLength = 10,
+                     trControl = tc)
+
+# Classification Tree
+set.seed(1234)
+model.ctree <- train(Accepted_Cmp ~., 
+                     data = train, 
+                     method = "rpart",
+                     trControl=tc,
+                     metric = "ROC",
+                     tuneLength = 10)
+
+# Random Forest
+set.seed(1234)
+model.rf <- train(Accepted_Cmp ~ ., 
+                  data = train, 
+                  method = "rf",
+                  metric = "ROC",
+                  tuneLength = 10,
+                  varImp=TRUE,
+                  trControl=tc)
+
+# Gradient Boost Machine
+set.seed(1234)
+model.gbm <- train(Accepted_Cmp~., 
+                   data = train, 
+                   method = "gbm",
+                   metric = "ROC",
+                   tuneLength=10,
+                   verbose = FALSE,
+                   trControl=tc)
+
+# compare models
+results <- resamples(list(knn = model.knn, 
+                          lr = model.lr, 
+                          lrsw = model.lrsw, 
+                          lrreg = model.lrreg,
+                          rf = model.rf,
+                          ctree = model.ctree,
+                          gbm = model.gbm))
+bwplot(results)
+
+## Examine the ROC curve (choose 0.19 as final cutoff point)
+library(qacReg)
+prob <- predict(model.rf, train, type="prob")[[2]]
+roc_plot(train$Accepted_Cmp, prob)
+
+# evaluate on test data
+test$Accepted_Cmp <- factor(test$Accepted_Cmp)
+prob <- predict(model.rf, test, type = "prob")[[2]]
+pred <- ifelse(prob > 0.19, 1, 0)
+pred <- factor(pred, levels = c(0, 1), labels = c("No", "Yes"))
+confusionMatrix(pred, test$Accepted_Cmp, positive = "Yes")
+
+# variable importance
+plot(varImp(model.rf))
+```
+
+Among all machine learning models, Random Forest performs the best. The Random Forest model predicts 90% of customers who take promotion will say "Yes" and around 66% of customers who do not take promotion will say "No". There is a 72% probability that the model predicts accurately. Amount spent on wines in the last 2 years has the greatest influence on predicting whether customers will take promotion or not, followed by their income and number of purchases made using catalog.
+
+
+To answer the research question, two graphs showing ... are presented below. (...analysis goes to the discussion part, clustering code goes to {r plot})
+
+```{r plot}
+
+# plot the fit
+library(ggplot2)
+ggplot(data=mtcars, aes(x=wt, y=mpg)) + 
+  geom_point() +
+  geom_smooth() +
+  labs(x = "Weight",
+       y = "Miles Per Gallon",
+       title = "Scatterplot with Fit")
+
+```
+
+
+## Discussion
+
+What did you find? How well were you able to solve the problem? What are the implications for
+further use? What suggestions do you have for other researchers who want to take your work
+further?
+
+## References
+Dataset: https://www.kaggle.com/datasets/imakash3011/customer-personality-analysis/data

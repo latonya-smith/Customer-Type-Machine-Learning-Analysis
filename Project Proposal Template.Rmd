@@ -1,0 +1,48 @@
+---
+title: "Project Title Here"
+date: "October 16, 2003"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+### Team Members  
+* Simin Liu   
+* Iris Chen  
+* Latonya Smith  
+
+## Problem Statement
+
+What is the problem you are trying to solve? Why is it important or useful to solve this problem?
+
+
+## Data Description
+
+Describe the dataset in detail. What is the source? Include URLs. How was it collected? What are the variables? What are the characteristics of the variables?
+
+Run the following code on your data. Be sure to change `eval` to `TRUE` and `mydata` to the name you give your data`.
+
+```{r echo=TRUE, eval=FALSE}
+library(readr)
+mydata <- read_csv("mydata.csv")
+
+
+library(qacBase)
+df_plot(mydata)
+contents(mydata)
+histograms(mydata)
+barcharts(mydata)
+cor_plot(mydata)
+```
+
+
+
+## Data Preprocessing
+
+Describe any variable transformations, treatment of missing values, recoding and any other data manipulations you believe you will need to do before you can build models.

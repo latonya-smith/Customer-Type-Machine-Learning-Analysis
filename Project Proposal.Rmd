@@ -1,0 +1,137 @@
+---
+title: "Customer Preference Analysis"
+date: "October 14, 2023"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+### Team Members
+
+-   Simin Liu
+-   Iris Chen
+-   Latonya Smith
+
+## Problem Statement
+
+### What is the problem you are trying to solve? Why is it important or useful to solve this problem?
+
+We are trying to understand how customer's demographic background (age, income, etc) and personal preference influence their decisions in the marketplace. In more specific terms, we would like to identify consumers that are more likely to take a promotion.
+
+The response variable will be a binary variable called `Accepted_Cmp` which will be created by merging variables AcceptedCmpt1, AcceptedCmpt2, AcceptedCmpt3, AcceptedCmpt4, AcceptedCmpt5 and Response (promotion campaign 6). It will count for if a customer has ever taken any promotion during 6 promotion campaigns. If true, assign 1 to Accepted_Cmp, otherwise 0.  
+
+The main explanatory variable will be a categorical variable called `item_preference`. This will be created by clustering customers together based on their purchase history and preference (the frequency of buying a certain item). The number of levels in this variable will be determined by K-means clustering.
+
+Other explanatory variables will be some demographic features and places customers make purchases. Tentatively we consider age (numeric), education (categorical), marital_status (categorical), income (numeric), children (categorical), NumWebPurchases (numeric), NumCatalogPurchases (numeric), NumStorePurchases (numeric), NumWebVisitsMonth (numeric). (Detailed data management below)   
+
+This is important for businesses because it allows them to gain information about their customers. They can gain knowledge about what products are best for promotions and which customers to target, along with how to appeal to these customers.
+
+## Data Description
+
+### Describe the dataset in detail. What is the source? Include URLs. How was it collected? What are the variables? What are the characteristics of the variables?
+
+Our dataset was sourced from kaggle.
+
+URL: <https://www.kaggle.com/datasets/imakash3011/customer-personality-analysis>
+
+It was collected and provide by Dr. Omar Romero-Hernandez a Mexican academic, engineer, and researcher who currently serves as a professor at U.C. Berkeley's Haas School of Business and at the Hult International Business School.
+
+```{r echo=TRUE, eval=TRUE}
+library(readr)
+customers <- read_csv("customer_personality.csv")
+
+
+library(qacBase)
+df_plot(customers)
+contents(customers)
+histograms(customers)
+barcharts(customers)
+cor_plot(customers, axis_text_size = 6, number_text_size = 1.5)
+```
+
+### Variables and their meanings are:
+
+People Attributes
+
+1. ID: Customer's unique identifier
+2. Year_Birth: Customer's birth year
+3. Education: Customer's education level
+4. Marital_Status: Customer's marital status
+5. Income: Customer's yearly household income
+6. Kidhome: Number of children in customer's household
+7. Teenhome: Number of teenagers in customer's household
+8. Dt_Customer: Date of customer's enrollment with the company
+9. Recency: Number of days since customer's last purchase
+10. Complain: 1 if the customer complained in the last 2 years, 0 otherwise
+
+Products
+
+1. MntWines: Amount spent on wine in last 2 years
+2. MntFruits: Amount spent on fruits in last 2 years
+3. MntMeatProducts: Amount spent on meat in last 2 years
+4. MntFishProducts: Amount spent on fish in last 2 years
+5. MntSweetProducts: Amount spent on sweets in last 2 years
+6. MntGoldProds: Amount spent on gold in last 2 years
+
+Promotion
+
+1. NumDealsPurchases: Number of purchases made with a discount
+
+2. AcceptedCmp1: 1 if customer accepted the offer in the 1st campaign, 0 otherwise
+
+3. AcceptedCmp2: 1 if customer accepted the offer in the 2nd campaign, 0 otherwise
+
+4. AcceptedCmp3: 1 if customer accepted the offer in the 3rd campaign, 0 otherwise
+
+5. AcceptedCmp4: 1 if customer accepted the offer in the 4th campaign, 0 otherwise
+
+6. AcceptedCmp5: 1 if customer accepted the offer in the 5th campaign, 0 otherwise
+
+7. Response: 1 if customer accepted the offer in the last campaign, 0 otherwise
+
+Place
+
+1. NumWebPurchases: Number of purchases made through the company’s website
+2. NumCatalogPurchases: Number of purchases made using a catalogue
+3. NumStorePurchases: Number of purchases made directly in stores
+4. NumWebVisitsMonth: Number of visits to company’s website in the last month
+
+
+## Data Preprocessing
+
+### Describe any variable transformations, treatment of missing values, recoding and any other data manipulations you believe you will need to do before you can build models.
+
+Variable Transformations: 
+
+-   Marital Status: We will merge Alone, YOLO and Absurd into the Single column,because they all mean the same thing.
+
+-   In the Education variable we will recode: 2n Cycle to Technical School, Basic to High School and below and Graduation to College Graduate.
+
+-   Create a variable called Age using the customer birth year(Year_Birth).
+
+-   Change the variables AcceptedCmp1, AcceptedCmp2, AcceptedCmp3, AcceptedCmp4, AcceptedCmp5 from numeric to categorical variables.
+
+-   Change Dt_Customer variable type from character to date.
+
+-   Rename variable Response to AcceptedCmp6, and make it a categorical variable.
+
+-   We will delete the variables z_revenue and z-costcontact.
+
+-   We plan to keep our missing variables, since it only makes up 1% of the dataset.
+
+-   We will also deal with the highly correlated variables as necessary.
+
+-   We will also combine Kidhome and Teenhome into one variable called `children`.
+
+-   We will create a variable called preference by clustering customers together based on their purchase history and preference. This variable will be categorical. The number of levels in this variable will be determined by K-means clustering. 
+
+-   We will create a variable Accepted_Cmp from the variables AcceptedCmpt1, AcceptedCmpt2, AcceptedCmpt3, AcceptedCmpt4, AcceptedCmpt5 and Response. This variable will have 2 levels, yes for ever taken the promotion, no for not. 
+
+-  We will delete the variables: AcceptedCmpt1, AcceptedCmpt2, AcceptedCmpt3, AcceptedCmpt4, AcceptedCmpt5 and Response.  
+
